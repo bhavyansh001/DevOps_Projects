@@ -237,7 +237,7 @@
 
 - name: Copy and edit Nginx configuration for {{ appname }}
   ansible.builtin.template:
-    src: templates/appname.conf.j2
+    src: appname.conf.j2
     dest: /etc/nginx/sites-enabled/{{ appname }}
     owner: root
     group: root
@@ -289,7 +289,7 @@
 
 - name: Create .rbenv-vars file
   ansible.builtin.template:
-    src: templates/.rbenv-vars.j2
+    src: .rbenv-vars.j2
     dest: /home/deploy/{{ appname }}/.rbenv-vars
     owner: deploy
     group: sudo
