@@ -1,5 +1,5 @@
 ---
-- name: Tattle prod setup
+- name: {{ appname }} prod setup
   hosts: app_prod
   become: yes
   roles:
