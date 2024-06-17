@@ -1,0 +1,5 @@
+DATABASE_URL=postgresql://deploy:{{ postgres_deploy_password }}@127.0.0.1/{{ appname }}
+REDIS_URL=redis://127.0.0.1:6379/0
+RAILS_MASTER_KEY={{ rails_master_key }}
+SECRET_KEY_BASE={{ secret_key_base }}
+

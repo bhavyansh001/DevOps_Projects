@@ -1,0 +1,35 @@
+---
+- name: Setup PostgreSQL and create user for deploy
+  hosts: app_prod
+  become: yes
+  tasks:
+    - name: Install PostgreSQL and related packages
+      ansible.builtin.apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+          - libpq-dev
+          - python3-psycopg2  
+        state: present
+        update_cache: yes
+    - name: Create PostgreSQL user 'deploy' with password authentication
+      community.postgresql.postgresql_user:
+        db: postgres
+        name: deploy 
+        password: "{{ postgres_deploy_password }}"
+        role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER
+      become: yes
+      become_user: postgres
+
+    - name: Create PostgreSQL database '{{ appname }}'
+      community.postgresql.postgresql_db:
+        name: "{{ appname }}"
+        owner: deploy
+      become: yes
+      become_user: postgres
+
+    - name: restart postgresql
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+      become: yes

@@ -1,0 +1,5 @@
+---
+- import_playbook: playbook-tattle.yaml
+- import_playbook: nginx.yaml
+- import_playbook: psql.yaml
+- import_playbook: final.yaml

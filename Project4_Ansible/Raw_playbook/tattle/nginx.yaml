@@ -1,0 +1,25 @@
+---
+- name: Configure Nginx for {{ appname }}
+  hosts: app_prod
+  become: yes
+  tasks:
+    - name: Remove default Nginx configuration
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Copy and edit Nginx configuration for {{ appname }}
+      ansible.builtin.template:
+        src: templates/appname.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ appname }}
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Nginx
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+

@@ -1,0 +1,7 @@
+---
+- name: Tattle prod setup
+  hosts: app_prod
+  become: yes
+  roles:
+    - deploy
+

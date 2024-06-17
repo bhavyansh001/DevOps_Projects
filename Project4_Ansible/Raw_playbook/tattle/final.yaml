@@ -1,0 +1,40 @@
+---
+- name: Tattle prod setup
+  hosts: app_prod
+  become: yes
+
+  tasks:
+    - name: Create {{ appname }} directory
+      ansible.builtin.file:
+        path: /home/deploy/{{ appname }}
+        state: directory
+        owner: deploy
+        group: sudo
+        mode: '0755'
+
+    - name: Create .rbenv-vars file
+      ansible.builtin.template:
+        src: templates/.rbenv-vars.j2
+        dest: /home/deploy/{{ appname }}/.rbenv-vars
+        owner: deploy
+        group: sudo
+        mode: '0644'
+
+    - name: Ensure o+x permissions on all files in {{ appname }} directory
+      ansible.builtin.file:
+        path: /home/deploy/{{ appname }}
+        recurse: yes
+        mode: '0755'
+
+    - name: Start Redis server
+      ansible.builtin.service:
+        name: redis-server
+        state: started
+        enabled: yes
+    - name: Change ownership of /home/deploy to deploy:deploy
+      ansible.builtin.command:
+        cmd: chown -R deploy:deploy /home/deploy
+
+    - name: Ensure o+x permissions on the home directory
+      ansible.builtin.command:
+        cmd: chmod o+x /home/deploy
