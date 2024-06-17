@@ -211,7 +211,7 @@
       environment:
         RBENV_ROOT: "/home/deploy/.rbenv"
         PATH: "/home/deploy/.rbenv/bin:/home/deploy/.rbenv/shims:{{ ansible_env.PATH }}"
-      become_user: deploy
+      become: yes
       when: not ruby_install_check.stat.exists
 
     - name: Set Ruby "{{ ruby_version }}" as global version
@@ -219,7 +219,7 @@
       environment:
         RBENV_ROOT: '/home/deploy/.rbenv'
         PATH: '/home/deploy/.rbenv/bin:/home/deploy/.rbenv/shims:{{ ansible_env.PATH }}'
-      become_user: deploy
+      become: yes
 
   handlers:
     - name: User changes handled
