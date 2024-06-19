@@ -1,0 +1,58 @@
+---
+# tasks file for db_setup
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+- name: Install PostgreSQL and related packages
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+      - python3-psycopg2
+      - python3-passlib
+    state: present
+    update_cache: yes
+
+- name: Restart PostgreSQL for setup
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+
+- name: Create PostgreSQL user 'deploy' with password authentication
+  community.postgresql.postgresql_user:
+    db: postgres
+    name: deploy
+    password: "{{ postgres_deploy_password }}"
+    role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER
+  become: yes
+  become_user: postgres
+
+- name: Create PostgreSQL database '{{ appname }}'
+  community.postgresql.postgresql_db:
+    name: "{{ appname }}"
+    owner: deploy
+  become: yes
+  become_user: postgres
+
+- name: Grant access to the database
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: '0644'
+
+- name: Update PostgreSQL configuration
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  notify: Restart PostgreSQL
+
+
+

@@ -2,7 +2,7 @@
 - This project uses AWS CLI to perform EC2 instance related tasks and a bash script to minimize the time it takes for developers to deploy rails code.
 Script is based on [Deploy guide by Gorails](https://gorails.com/deploy/ubuntu/22.04)
 
-Link to my blog for walkthrough:
+Link to blog for walkthrough with screenshots:
 [Project1](https://diversepixel.medium.com/deploying-geeky-using-aws-cli-devops-project-01-5f0a9035e70b) 
 
 ## Project2:
@@ -18,8 +18,10 @@ Link to my blog for walkthrough, covering ECR, ECS and the steps to follow:
 - Rails application deployed based on Microservices architecture. Used different instance for running `postgres database` and `redis cache service`.
 Learnt about configuration files and setting up secure remote connections.
 Deployed application: [Geeky](https://github.com/bhavyansh001/geeky_01)
+[Edit after Project 4]
+We can also use Ansible for microservice deployment, automating a large part of this setup
 
-Link to my blog:
+Link to blog for walkthrough with screenshots:
 [Project3](https://diversepixel.medium.com/microservices-on-aws-ec2-devops-project-03-a434c92763e5) 
 
 ## Project4:
@@ -27,5 +29,13 @@ Link to my blog:
 Deployed application: [Tattle](https://github.com/bhavyansh001/tattle)
 Contains a shell script to be run to set env vars for application deployment, then the main playbook can be run.
 
-Link to my blog:
+Link to blog for walkthrough with screenshots:
 [Project4](https://diversepixel.medium.com/rails-deployment-using-ansible-devops-project-04-945588169942) 
+
+## Project5:
+- Terraform & Ansible: Complete Microservice Infrastructure Automation
+Deployed application: [Tattle](https://github.com/bhavyansh001/tattle)
+Any rails developer can make use of this project to deploy their application very quickly, setting up the infrastructure and configuring the instances.
+
+Link to blog for walkthrough with screenshots:
+[Project5](https://diversepixel.medium.com/terraform-iac-ansible-devops-project-05-4353802be1a3)

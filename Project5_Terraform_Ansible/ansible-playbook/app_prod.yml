@@ -1,0 +1,22 @@
+---
+- name: Tattle app setup
+  hosts: app_prod
+  become: yes
+  roles:
+    - role: deploy
+      tags: app
+
+- name: Tattle database setup
+  hosts: db_prod
+  become: yes
+  roles:
+    - role: db_setup
+      tags: db
+
+- name: Tattle Redis setup
+  hosts: redis_prod
+  become: yes
+  roles:
+    - role: redis_setup
+      tags: redis
+

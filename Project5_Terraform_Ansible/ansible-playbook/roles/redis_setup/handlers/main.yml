@@ -1,0 +1,7 @@
+---
+# handlers file for redis_setup
+
+- name: Restart Redis
+  ansible.builtin.service:
+    name: redis-server
+    state: restarted

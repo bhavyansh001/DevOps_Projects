@@ -1,0 +1,9 @@
+---
+# vars file for db_setup
+
+appname: "{{ lookup('env', 'APP_NAME') }}"
+postgres_deploy_password: "{{ lookup('env', 'POSTGRES_DEPLOY_PASSWORD') }}"
+db_instance_ip: "{{ lookup('env', 'DB_HOST') }}"
+app_instance_ip: "{{ lookup('env', 'APP_HOST') }}"
+postgres_user: "{{ lookup('env', 'POSTGRESQL_USER') }}"
+postgresql_version: "{{ lookup('env', 'POSTGRESQL_VERSION') }}"
