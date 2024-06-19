@@ -1,0 +1,14 @@
+all:
+  hosts:
+    app_prod:
+      ansible_host: "{{ lookup('env', 'APP_HOST') }}"
+      ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+      ansible_ssh_private_key_file: "{{ lookup('env', 'ANSIBLE_SSH_PRIVATE_KEY_FILE') }}"
+    db_prod:
+      ansible_host: "{{ lookup('env', 'DB_HOST') }}"
+      ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+      ansible_ssh_private_key_file: "{{ lookup('env', 'ANSIBLE_SSH_PRIVATE_KEY_FILE') }}"
+    redis_prod:
+      ansible_host: "{{ lookup('env', 'REDIS_HOST') }}"
+      ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+      ansible_ssh_private_key_file: "{{ lookup('env', 'ANSIBLE_SSH_PRIVATE_KEY_FILE') }}"

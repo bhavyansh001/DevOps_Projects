@@ -1,0 +1,26 @@
+---
+# tasks file for redis_setup
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  loop:
+    - redis-server
+    - redis-tools
+  notify: Restart Redis
+
+- name: Update Redis configuration
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf.j2
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart Redis

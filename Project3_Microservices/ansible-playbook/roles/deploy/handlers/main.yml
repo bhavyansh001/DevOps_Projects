@@ -1,0 +1,21 @@
+---
+# handlers file for deploy
+#
+- name: Reload Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: User changes handled
+  debug:
+    msg: "New user created or permissions elevated."
+
+- name: Restart SSH service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+
+- name: Restart PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted

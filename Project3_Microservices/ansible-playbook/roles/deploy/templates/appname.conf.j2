@@ -1,0 +1,24 @@
+server {
+  listen 80;
+  listen [::]:80;
+  server_name _;
+  root /home/deploy/{{ appname }}/current/public;
+
+  passenger_enabled on;
+  passenger_app_env production;
+  passenger_preload_bundler on;
+
+  location /cable {
+    passenger_app_group_name {{ appname }}_websocket;
+    passenger_force_max_concurrent_requests_per_process 0;
+  }
+
+  # Allow uploads up to 100MB in size
+  client_max_body_size 100m;
+
+  location ~ ^/(assets|packs) {
+    expires max;
+    gzip_static on;
+  }
+}
+

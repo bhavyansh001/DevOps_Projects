@@ -1,0 +1,10 @@
+## Use this for monolith deployment
+# DATABASE_URL=postgresql://deploy:{{ postgres_deploy_password }}@127.0.0.1/{{ appname }}
+
+## Use this for microservice deployment
+DATABASE_URL=postgresql://deploy:{{ postgres_deploy_password }}@{{ db_instance_ip }}/{{ appname }}
+
+REDIS_URL=redis://{{ redis_instance_ip }}:6379/0
+RAILS_MASTER_KEY={{ rails_master_key }}
+SECRET_KEY_BASE={{ secret_key_base }}
+

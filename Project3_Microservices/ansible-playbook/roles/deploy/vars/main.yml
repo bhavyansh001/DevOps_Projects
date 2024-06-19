@@ -1,0 +1,12 @@
+---
+# vars file for deploy
+appname: "{{ lookup('env', 'APP_NAME') }}"
+ruby_version: "{{ lookup('env', 'RUBY_VERSION') }}"
+postgres_deploy_password: "{{ lookup('env', 'POSTGRES_DEPLOY_PASSWORD') }}"
+secret_key_base: "{{ lookup('env', 'SECRET_KEY_BASE') }}"
+rails_master_key: "{{ lookup('env', 'RAILS_MASTER_KEY') }}"
+db_instance_ip: "{{ lookup('env', 'DB_HOST') }}"
+redis_instance_ip: "{{ lookup('env', 'REDIS_HOST') }}"
+app_instance_ip: "{{ lookup('env', 'APP_HOST') }}"
+postgres_user: "{{ lookup('env', 'POSTGRESQL_USER') }}"
+postgresql_version: "{{ lookup('env', 'POSTGRESQL_VERSION') }}"

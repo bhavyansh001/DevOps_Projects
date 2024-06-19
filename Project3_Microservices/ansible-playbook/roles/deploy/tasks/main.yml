@@ -1,0 +1,354 @@
+---
+# tasks file for deploy
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+# MAIN SETUP (User, SSH, and deps)
+- name: Hash the PostgreSQL deploy password
+  ansible.builtin.set_fact:
+    hashed_password: "{{ postgres_deploy_password | password_hash('sha512') }}"
+
+- name: Create deploy user and add to group sudo
+  ansible.builtin.user:
+    name: deploy
+    password: "{{ hashed_password }}" 
+    create_home: yes
+    shell: /bin/bash
+    home: /home/deploy
+    groups: sudo
+    append: yes
+  notify: User changes handled
+
+- name: Allow deploy user passwordless sudo
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^deploy ALL='
+    line: 'deploy ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  notify: User changes handled
+
+- name: Ensure .ssh directory exists for deploy user
+  ansible.builtin.file:
+    path: /home/deploy/.ssh
+    state: directory
+    owner: deploy
+    group: sudo
+    mode: '0700'
+
+- name: Copy .ssh directory and contents
+  ansible.builtin.copy:
+    src: /home/ubuntu/.ssh/
+    dest: /home/deploy/.ssh/
+    owner: deploy
+    group: sudo
+    mode: '0600'
+  notify: Restart SSH service
+
+- name: Create deploy's Ansible temporary directory
+  ansible.builtin.file:
+    path: /home/deploy/.ansible/tmp
+    state: directory
+    mode: '0777'
+    owner: deploy
+    group: deploy
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  loop:
+    - git-core
+    - curl
+    - zlib1g-dev
+    - build-essential
+    - libssl-dev
+    - libreadline-dev
+    - libyaml-dev
+    - libsqlite3-dev
+    - sqlite3
+    - libxml2-dev
+    - libxslt1-dev
+    - libcurl4-openssl-dev
+    - software-properties-common
+    - libffi-dev
+    - dirmngr
+    - gnupg
+    - apt-transport-https
+    - ca-certificates
+    - redis-tools
+    - nodejs
+    - yarn
+    - libvips-dev
+    - nginx
+    - python3-passlib
+    - postgresql-contrib
+    - libpq-dev
+    - postgresql
+    - python3-psycopg2
+    - python3-passlib
+
+
+      #- name: Clone rbenv repository
+      #  ansible.builtin.git:
+      # repo: 'https://github.com/rbenv/rbenv.git'
+      #    dest: '/home/deploy/.rbenv'
+      #  become: yes
+- name: Check if rbenv directory exists
+  ansible.builtin.stat:
+    path: /home/deploy/.rbenv
+  register: rbenv_stat
+
+- name: Clone rbenv repository
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/rbenv.git'
+    dest: '/home/deploy/.rbenv'
+  become_user: deploy  # Use become_user to switch to the 'deploy' user for this task
+  when: not rbenv_stat.stat.exists
+
+- name: Ensure rbenv directory ownership
+  ansible.builtin.file:
+    path: /home/deploy/.rbenv
+    owner: deploy
+    group: deploy
+    recurse: yes
+  when: rbenv_stat.stat.exists
+
+- name: Update PATH for rbenv in .bashrc
+  ansible.builtin.lineinfile:
+    path: '/home/deploy/.bashrc'
+    regexp: '^export PATH="\$HOME/\.rbenv/bin:\$PATH"'
+    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+    state: present
+  become_user: deploy
+
+- name: Add rbenv init to .bashrc
+  ansible.builtin.lineinfile:
+    path: '/home/deploy/.bashrc'
+    regexp: '^eval "\$\(rbenv init -\)"'
+    line: 'eval "$(rbenv init -)"'
+    state: present
+
+      #- name: Clone ruby-build repository
+  #  ansible.builtin.git:
+    #    repo: 'https://github.com/rbenv/ruby-build.git'
+      #   dest: '/home/deploy/.rbenv/plugins/ruby-build'
+#  become: yes
+
+- name: Check if ruby-build directory exists
+  ansible.builtin.stat:
+    path: /home/deploy/.rbenv/plugins/ruby-build
+  register: ruby_build_stat
+
+- name: Clone ruby-build repository
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/ruby-build.git'
+    dest: '/home/deploy/.rbenv/plugins/ruby-build'
+  become_user: deploy
+  when: not ruby_build_stat.stat.exists
+
+- name: Ensure ruby-build directory ownership
+  ansible.builtin.file:
+    path: /home/deploy/.rbenv/plugins/ruby-build
+    owner: deploy
+    group: deploy
+    recurse: yes
+  when: ruby_build_stat.stat.exists
+
+- name: Add ruby-build directory to Git safe.directory
+  ansible.builtin.command:
+    cmd: "git config --global --add safe.directory /home/deploy/.rbenv/plugins/ruby-build"
+  become_user: deploy
+  when: ruby_build_stat.stat.exists
+
+- name: Update PATH for ruby-build in .bashrc
+  ansible.builtin.lineinfile:
+    path: '/home/deploy/.bashrc'
+    regexp: '^export PATH="\$HOME/\.rbenv/plugins/ruby-build/bin:\$PATH"'
+    line: 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"'
+    state: present
+  become_user: deploy
+
+    #- name: Clone rbenv-vars repository
+  #  ansible.builtin.git:
+    #    repo: 'https://github.com/rbenv/rbenv-vars.git'
+      #    dest: '/home/deploy/.rbenv/plugins/rbenv-vars'
+      #  become: yes
+
+- name: Check if rbenv-vars directory exists
+  ansible.builtin.stat:
+    path: /home/deploy/.rbenv/plugins/rbenv-vars
+  register: rbenv_vars_stat
+
+- name: Clone rbenv-vars repository
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/rbenv-vars.git'
+    dest: '/home/deploy/.rbenv/plugins/rbenv-vars'
+  become_user: deploy  # Use become_user to switch to the 'deploy' user for this task
+  when: not rbenv_vars_stat.stat.exists
+
+- name: Ensure rbenv-vars directory ownership
+  ansible.builtin.file:
+    path: /home/deploy/.rbenv/plugins/rbenv-vars
+    owner: deploy
+    group: deploy
+    recurse: yes
+  when: rbenv_vars_stat.stat.exists
+
+- name: Add rbenv-vars directory to Git safe.directory
+  ansible.builtin.command:
+    cmd: "git config --global --add safe.directory /home/deploy/.rbenv/plugins/rbenv-vars"
+  become_user: deploy
+  when: rbenv_vars_stat.stat.exists
+
+- name: Initialize rbenv in current shell session
+  ansible.builtin.shell: source /home/deploy/.bashrc
+  become_user: deploy
+  args:
+    executable: /bin/bash
+
+- name: Install rbenv plugins
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/ruby-build.git'
+    dest: '/home/deploy/.rbenv/plugins/ruby-build'
+    update: no
+  become_user: deploy
+
+- name: Add Phusion Passenger PGP key
+  shell: curl https://oss-binaries.phusionpassenger.com/auto-software-signing-gpg-key.txt | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/phusion.gpg >/dev/null
+  args:
+    creates: /etc/apt/trusted.gpg.d/phusion.gpg
+
+- name: Add Phusion Passenger APT repository
+  apt_repository:
+    repo: 'deb https://oss-binaries.phusionpassenger.com/apt/passenger jammy main'
+    state: present
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+- name: Install libnginx-mod-http-passenger
+  apt:
+    name: libnginx-mod-http-passenger
+    state: present
+
+- name: Ensure mod-http-passenger.conf is enabled
+  file:
+    src: /usr/share/nginx/modules-available/mod-http-passenger.load
+    dest: /etc/nginx/modules-enabled/50-mod-http-passenger.conf
+    state: link
+    force: yes
+
+- name: Create mod-http-passenger.conf if missing
+  shell: echo "passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;" | sudo tee /etc/nginx/conf.d/mod-http-passenger.conf
+  args:
+    creates: /etc/nginx/conf.d/mod-http-passenger.conf
+
+- name: Restart Nginx to apply Passenger configuration
+  service:
+    name: nginx
+    state: restarted
+
+- name: Ensure mod-http-passenger.conf is enabled
+  file:
+    src: /usr/share/nginx/modules-available/mod-http-passenger.load
+    dest: /etc/nginx/modules-enabled/50-mod-http-passenger.conf
+    state: link
+    force: yes
+
+- name: Modify passenger_ruby in mod-http-passenger.conf
+  ansible.builtin.copy:
+    content: |
+      ### Begin automatically installed Phusion Passenger config snippet ###
+      passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;
+      passenger_ruby /home/deploy/.rbenv/shims/ruby;
+
+      passenger_instance_registry_dir /var/run/passenger-instreg;
+
+      ### End automatically installed Phusion Passenger config snippet ###
+    dest: /etc/nginx/conf.d/mod-http-passenger.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+
+- name: Restart Nginx to apply Passenger configuration
+  service:
+    name: nginx
+    state: restarted
+
+- name: Check if Ruby {{ ruby_version }} is already installed
+  ansible.builtin.stat:
+    path: "/home/deploy/.rbenv/versions/{{ ruby_version }}/bin/ruby"
+  register: ruby_install_check
+
+- name: Install Ruby {{ ruby_version }} with rbenv
+  ansible.builtin.command: "/home/deploy/.rbenv/bin/rbenv install {{ ruby_version }}"
+  args:
+    creates: "/home/deploy/.rbenv/versions/{{ ruby_version }}/bin/ruby"
+  environment:
+    RBENV_ROOT: "/home/deploy/.rbenv"
+    PATH: "/home/deploy/.rbenv/bin:/home/deploy/.rbenv/shims:{{ ansible_env.PATH }}"
+  become: yes
+  when: not ruby_install_check.stat.exists
+
+- name: Set Ruby "{{ ruby_version }}" as global version
+  ansible.builtin.command: /home/deploy/.rbenv/bin/rbenv global "{{ ruby_version }}"
+  environment:
+    RBENV_ROOT: '/home/deploy/.rbenv'
+    PATH: '/home/deploy/.rbenv/bin:/home/deploy/.rbenv/shims:{{ ansible_env.PATH }}'
+  become: yes
+
+# NGINX
+- name: Remove default Nginx configuration
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Copy and edit Nginx configuration for {{ appname }}
+  ansible.builtin.template:
+    src: appname.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ appname }}
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload Nginx
+
+# POSTGRESQL SETUP
+
+# FINAL SETUP (Permissions)
+    
+- name: Create {{ appname }} directory
+  ansible.builtin.file:
+    path: /home/deploy/{{ appname }}
+    state: directory
+    owner: deploy
+    group: sudo
+    mode: '0755'
+
+- name: Create .rbenv-vars file
+  ansible.builtin.template:
+    src: .rbenv-vars.j2
+    dest: /home/deploy/{{ appname }}/.rbenv-vars
+    owner: deploy
+    group: sudo
+    mode: '0644'
+
+- name: Ensure o+x permissions on all files in {{ appname }} directory
+  ansible.builtin.file:
+    path: /home/deploy/{{ appname }}
+    recurse: yes
+    mode: '0755'
+
+- name: Change ownership of /home/deploy to deploy:deploy
+  ansible.builtin.command:
+    cmd: chown -R deploy:deploy /home/deploy/
+
+- name: Ensure o+x permissions on the home directory
+  ansible.builtin.command:
+    cmd: chmod o+x /home/deploy/
+    
