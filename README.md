@@ -1,3 +1,13 @@
+## Apps used in this repository:
+1. [Geeky](https://github.com/bhavyansh001/geeky_01) [Full-stack Dynamic Mathematical game]
+2. [Tattle](https://github.com/bhavyansh001/tattle) [Full-stack Real-time Chat app]
+3. [EventApp](https://github.com/bhavyansh001/EventApp) [Full-stack Event Management app]
+4. [Contained Rails](https://github.com/bhavyansh001/contained_rails) [Multi container Dockerized (docker-compose) application]
+5. [Articles API](https://github.com/bhavyansh001/rails_api_myarticles) [REST API Backend]
+
+## Tools used in this repository:
+Linux, Docker, Bash scripting, AWS, Microservices, Ansible, Terraform
+
 ## Project1:
 - This project uses AWS CLI to perform EC2 instance related tasks and a bash script to minimize the time it takes for developers to deploy rails code.
 Script is based on [Deploy guide by Gorails](https://gorails.com/deploy/ubuntu/22.04)
