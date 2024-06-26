@@ -1,0 +1,21 @@
+services:
+  web:   # Your Rails application service
+    build: .
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    ports:
+      - "3000:3000"
+    depends_on:  # Make your Rails app wait for the database to start
+      - db
+    env_file:
+      - .env
+
+  db:   # Your PostgreSQL database service
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env 

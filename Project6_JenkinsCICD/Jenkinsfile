@@ -1,0 +1,109 @@
+def COLOR_MAP = [
+    'SUCCESS' : 'good',
+    'FAILURE' : 'danger'
+]
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Prepare Environment') {
+            steps {
+                script {
+                    // Download and install Docker
+                    sh '''
+                        set -e
+                        if ! command -v docker &> /dev/null
+                        then
+                            curl -fsSL https://get.docker.com -o get-docker.sh
+                            sudo sh get-docker.sh
+                            sudo usermod -aG docker jenkins
+                            sudo systemctl restart docker
+                         else
+                            echo "Docker is already installed."
+                        fi
+                    '''
+                }
+                script {
+                    // Install Docker Compose
+                    sh '''
+                        if ! command -v docker-compose &> /dev/null
+                        then
+                            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                            sudo chmod +x /usr/local/bin/docker-compose
+                         else
+                            echo "Docker Compose is already installed."
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Clone Repository') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/jenkins']],
+                    userRemoteConfigs: [[url: "https://github.com/bhavyansh001/${env.APP_NAME}.git"]]
+                ])
+            }
+        }
+
+        stage('Build Docker Image') {
+            //  environment {
+            //     POSTGRES_USER = "${env.POSTGRES_USER}"
+            //     POSTGRES_PASSWORD = "${env.POSTGRES_PASSWORD}"
+            //     POSTGRES_DB = "${env.POSTGRES_DB}"
+            // }
+            steps {
+                script {
+                     // Create .env file with the environment variables
+                    sh """
+                        echo "POSTGRES_USER=${env.POSTGRES_USER}" > .env
+                        echo "POSTGRES_PASSWORD=${env.POSTGRES_PASSWORD}" >> .env
+                        echo "POSTGRES_DB=${env.POSTGRES_DB}" >> .env
+                        sudo docker-compose build
+                        sudo docker-compose up --detach
+                    """
+                }
+            }
+        }
+
+        stage('Run RSpec Tests') {
+            steps {
+                script {
+                    sh """
+                        sudo docker-compose exec -T web bundle install
+                        sudo docker-compose exec -T web bundle exec bin/rails db:migrate
+                        sudo docker-compose exec -T web bundle exec rspec
+                    """
+                }
+            }
+        }
+        stage('Push to docker hub') {
+            steps {
+                script {
+                    // lowercase appname to be used
+                    sh """
+                        docker login -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASS}
+                        docker tag eventapppipeline_web ${env.DOCKER_HUB_USER}/eventapp:${env.BUILD_ID}
+                        docker push ${env.DOCKER_HUB_USER}/eventapp:${env.BUILD_ID}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Bring down docker-compose
+            sh 'sudo docker-compose down'
+            // Slack notification
+            echo 'Slack Notifications.'
+            slackSend channel: '#jenkins-cicd',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+            cleanWs()
+        }
+    }
+}

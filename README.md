@@ -6,7 +6,7 @@
 5. [Articles API](https://github.com/bhavyansh001/rails_api_myarticles) [REST API Backend]
 
 ## Tools used in this repository:
-Linux, Docker, Bash scripting, AWS, Microservices, Ansible, Terraform
+Linux, Docker, Bash shell, AWS, Ansible, Terraform, Jenkins
 
 ## Project1:
 - This project uses AWS CLI to perform EC2 instance related tasks and a bash script to minimize the time it takes for developers to deploy rails code.
@@ -49,3 +49,22 @@ Any rails developer can make use of this project to deploy their application ver
 
 Link to blog for walkthrough with screenshots:
 [Project5](https://diversepixel.medium.com/terraform-iac-ansible-devops-project-05-4353802be1a3)
+
+## Project6:
+- Jenkins for CICD: Automating the workflow
+Deployed application: [EventApp](https://github.com/bhavyansh001/EventApp) (branch: jenkins)
+Continuous Integration and Deployment achieved using Jenkins, the Jenkinsfile responds to GitHub webhooks and does the following:
+- Prepares environment by installing dependencies
+- Clones repository
+- Builds Docker image
+- Runs RSpec tests
+- Pushes the image to the registry (docker hub)
+- Sends notification about build status on slack
+
+Requires Global properties -> Environment variables to be set.
+
+Link to the latest auto pushed docker image:
+[EventApp on Docker Hub](https://hub.docker.com/repository/docker/bhavyansh001/eventapp/general)
+
+Link to blog for walkthrough with screenshots:
+[Project6](https://diversepixel.medium.com/jenkins-for-ci-cd-devops-project-06-b91598c52b05)
