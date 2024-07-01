@@ -6,7 +6,7 @@
 5. [Articles API](https://github.com/bhavyansh001/rails_api_myarticles) [REST API Backend]
 
 ## Tools used in this repository:
-Linux, Docker, Bash shell, AWS, Ansible, Terraform, Jenkins, GitOps, Prometheus, Grafana, and others
+Linux, Docker, Bash shell, AWS, Ansible, Terraform, Jenkins, GitOps, Prometheus, Grafana, Kubernetes and others
 
 ## Project1:
 - This project uses AWS CLI to perform EC2 instance related tasks and a bash script to minimize the time it takes for developers to deploy rails code.
@@ -83,3 +83,13 @@ Link to blog for walkthrough with screenshots:
 
 Link to blog for walkthrough with screenshots:
 [Project8](https://diversepixel.medium.com/monitoring-a-rails-app-using-prometheus-and-grafana-devops-project-08-2c7d8f5afd5c)
+
+## Project9:
+- App Deployment on Kubernetes Cluster, this project is deployed using kOps on AWS EC2, it ensures data persistence using EBS service by AWS. Services used in this project: EC2, S3, EBS, Route53, IAM, and more.
+- One control plane and two worker nodes
+- Different manifests for rails and postgres services
+- [EventApp on GitHub](https://github.com/bhavyansh001/geeky_01)
+- [EventApp on Docker Hub](https://hub.docker.com/repository/docker/bhavyansh001/eapp/general)
+
+Link to blog for walkthrough with screenshots:
+[Project9](https://diversepixel.medium.com/kubernetes-deployment-devops-project-09-087184e9ca85)
